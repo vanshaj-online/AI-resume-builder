@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  /* Colors */
+  --color-primary: #000000;
+  --color-on-primary: #ffffff;
+  --color-ink: #000000;
+  --color-body: #5e5e5e;
+  --color-mute: #afafaf;
+  --color-hairline-mid: #4b4b4b;
+  --color-canvas: #ffffff;
+  --color-canvas-soft: #efefef;
+  --color-canvas-softer: #f3f3f3;
+  --color-surface-pressed: #e2e2e2;
+  --color-link: #0000ee;
+  --color-on-dark: #ffffff;
+  --color-black-elevated: #282828;
+
+  /* Border Radius */
+  --radius-none: 0px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 999px;
+  --radius-pill-tab: 36px;
+  --radius-full: 9999px;
+
+  /* Typography (Falling back to Inter/System fonts to mimic UberMove) */
+  --font-display: 'Inter', system-ui, 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Inter', system-ui, 'Helvetica Neue', Arial, sans-serif;
+  --font-times: 'Times New Roman', serif;
+}
+
+@layer base {
+  body {
+    /* Utilizing our new theme variables out of the box */
+    @apply bg-canvas text-ink font-body antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-normal;
+  }
+}
+
+input{
+  @apply border border-gray-300 rounded-md px-3 bg-white py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
+}
+
+#resume *{
+  font-family: var(--font-times);
+}
+
+#resume h3{
+  font-size: 16px;
+  letter-spacing: 0;
+}
