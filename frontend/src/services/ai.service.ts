@@ -25,6 +25,6 @@ export const aiService = {
     analyzeRoleSkills: async (role: string) => {
         const response = await api.post('/ai/analyze-skills', { role });
         return response.data;
-    }
+    }   
 
 };

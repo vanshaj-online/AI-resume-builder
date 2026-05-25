@@ -69,4 +69,5 @@ router.post('/improve-bullet', protect, async (req: Request, res: Response) => {
   }
 });
 
+
 export default router;

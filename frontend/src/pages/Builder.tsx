@@ -8,7 +8,10 @@ import { useReactToPrint } from 'react-to-print';
 
 export const Builder = () => {
     const { id } = useParams<{ id: string }>();
+
     const [suggestedSkills, setSuggestedSkills] = useState<string[]>([]);
+    const [aiError, setAiError] = useState<null | string>(null)
+
     const navigate = useNavigate();
     const { currentResume, setCurrentResume, fetchResumes, resumes, updateResume } = useResumeStore();
 
@@ -52,6 +55,7 @@ export const Builder = () => {
     useEffect(() => {
         const fetchAiSkills = async () => {
             if (!currentResume?.targetRole) return;
+            setAiError(null)
 
             try {
                 const response = await aiService.analyzeRoleSkills(currentResume.targetRole);
@@ -59,6 +63,8 @@ export const Builder = () => {
                     setSuggestedSkills(response.skills);
                 }
             } catch (err) {
+                const message = err.response?.data?.message || "AI is having high traffic, Try again later";
+                setAiError(message)
                 console.error("AI Skill Fetch failed", err);
             }
         };
@@ -81,9 +87,7 @@ export const Builder = () => {
         if (!id) return;
         setIsSaving(true);
         try {
-            await updateResume(id, currentResume);
-            console.log("After save - techInput:", techInput);
-            console.log("After save - projects:", currentResume.projects);
+            await updateResume(id, currentResume)
         } catch (err) {
             console.error("Cloud Save Failed:", err);
         } finally {
@@ -473,6 +477,7 @@ export const Builder = () => {
                                     <div>
                                         <h5 className="text-xs uppercase tracking-wider font-bold text-body mb-2">Recommended Gaps ({missing.length})</h5>
                                         <div className="flex flex-wrap gap-1">
+                                            {aiError && <p className="text-xs uppercase tracking-wider font-bold text-body">{aiError}</p>}
                                             {missing.map((s, i) => (
                                                 <button key={i} className="text-xs bg-white text-body border border-dashed border-mute px-2 py-0.5 rounded-md hover:bg-primary hover:text-white transition-colors" onClick={() => updateStoreField((prev) => {
                                                     if (prev && !prev.skills.includes(s)) {

@@ -2,19 +2,28 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import { GoogleGenAI } from "@google/genai";
+import { SkillCache } from '../models/skillsCache.model';
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY || '',
 });
 
 export const getSkillsByRole = async (role: string) => {
-    const prompt = `
-    Act as a professional technical recruiter. 
+    const prompt = `Act as a professional technical recruiter. 
     List the top 5 or 10 core essential technical skills for a "${role}".
     Return ONLY a comma-separated list of skills. 
     Example: React, TypeScript, Next.js for a Frontend Developer
     Note: strictly keep concepts for later if space available, like ui,ux principles, and try to avoid skills like HTML, CSS, because if a developer knows react, typescript and next js then its obvious he would have known these fundamentals.
-  `;
+    Avoid: using brackets ()`;
+
+    const normalizedRole = role.toLowerCase().trim();
+
+    // 1. CACHE CHECK
+    const cached = await SkillCache.findOne({ role: normalizedRole });
+    if (cached) {
+        console.log(cached, "Skills found in cache");
+        return cached.skills;
+    }
 
     try {
 
@@ -25,12 +34,26 @@ export const getSkillsByRole = async (role: string) => {
 
         const text = response.text ?? '';
 
-        return text.split(',').map(skill => skill.trim());
 
-    } catch (error) {
+        const skillsArray = text.split(',').map(skill => skill.trim()).filter(s => s !== "");
+
+        console.log(skillsArray, "skills generated from gemini");
+
+        await SkillCache.create({
+            role: normalizedRole,
+            skills: skillsArray
+        });
+
+        return skillsArray;
+
+    } catch (error: any) {
+        if (error.status === 503 || error.status === 429) {
+            throw new Error("AI is currently experiencing high traffic. Analysis may be delayed.");
+        }
         console.error("AI Skills Generation Error:", error);
         throw new Error("AI generation failed. Please try again.");
     }
+
 };
 
 export const generateResumeSummary = async (
